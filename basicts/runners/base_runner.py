@@ -28,8 +28,10 @@ class BaseRunner(Runner):
 
         # validate every `val_interval` epoch
         self.val_interval = cfg["VAL"].get("INTERVAL", 1)
-        # test every `test_interval` epoch
+        self.val_start = cfg["VAL"].get("START", 1)
+        # test every `test_interval` epoch from START epoch
         self.test_interval = cfg["TEST"].get("INTERVAL", 1)
+        self.test_start = cfg["TEST"].get("START", 1)
 
         # declare data loader
         self.train_data_loader = None
@@ -96,7 +98,6 @@ class BaseRunner(Runner):
             cfg (dict): config
         """
 
-        self.test_interval = cfg["TEST"].get("INTERVAL", 1)
         self.test_data_loader = self.build_test_data_loader(cfg)
         self.register_epoch_meter("test_time", "test", "{:.2f} (s)", plt=False)
 
@@ -141,10 +142,10 @@ class BaseRunner(Runner):
         # tensorboard plt meters
         self.plt_epoch_meters("train", epoch)
         # validate
-        if self.val_data_loader is not None and epoch % self.val_interval == 0:
+        if self.val_data_loader is not None and epoch % self.val_interval == 0 and epoch >= self.val_start:
             self.validate(train_epoch=epoch)
         # test
-        if self.test_data_loader is not None and epoch % self.test_interval == 0:
+        if self.test_data_loader is not None and epoch % self.test_interval == 0 and epoch >= self.test_start:
             self.test_process(train_epoch=epoch)
         # save model
         self.save_model(epoch)
