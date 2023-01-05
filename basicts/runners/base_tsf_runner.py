@@ -325,4 +325,8 @@ class BaseTimeSeriesForecastingRunner(BaseRunner):
         """
 
         if train_epoch is not None:
-            self.save_best_model(train_epoch, "val_MAE", greater_best=False)
+            try:
+                self.val_best =  self.save_best_model(train_epoch, "val_MAE", greater_best=False)
+            except:
+                self.test_best = False
+                self.save_best_model(train_epoch, "val_MAE", greater_best=False)

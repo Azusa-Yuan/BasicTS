@@ -29,9 +29,12 @@ class BaseRunner(Runner):
         # validate every `val_interval` epoch
         self.val_interval = cfg["VAL"].get("INTERVAL", 1)
         self.val_start = cfg["VAL"].get("START", 1)
+        self.val_best = False
         # test every `test_interval` epoch from START epoch
         self.test_interval = cfg["TEST"].get("INTERVAL", 1)
         self.test_start = cfg["TEST"].get("START", 1)
+        # only test best val
+        self.test_best = cfg["TEST"].get("BEST", False)
 
         # declare data loader
         self.train_data_loader = None
@@ -146,7 +149,11 @@ class BaseRunner(Runner):
             self.validate(train_epoch=epoch)
         # test
         if self.test_data_loader is not None and epoch % self.test_interval == 0 and epoch >= self.test_start:
-            self.test_process(train_epoch=epoch)
+            if self.test_best:
+                if self.val_best:
+                    self.test_process(train_epoch=epoch)
+            else:
+                self.test_process(train_epoch=epoch)
         # save model
         self.save_model(epoch)
         # reset meters
